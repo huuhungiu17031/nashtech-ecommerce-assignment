@@ -1,0 +1,13 @@
+package com.nashtech.cellphonesfake;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class CellphonesFakeApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
