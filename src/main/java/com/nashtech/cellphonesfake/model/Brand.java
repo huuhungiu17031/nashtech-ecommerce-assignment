@@ -22,7 +22,10 @@ public class Brand {
     @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY)
     List<Product> products;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    Category category;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "brand_category",
+            joinColumns = @JoinColumn(name = "brand_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    List<Category> categories;
 }
