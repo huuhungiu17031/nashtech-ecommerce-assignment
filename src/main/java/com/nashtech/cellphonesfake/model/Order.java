@@ -1,5 +1,6 @@
 package com.nashtech.cellphonesfake.model;
 
+import com.nashtech.cellphonesfake.enumeration.StatusType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,7 +18,8 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     String payment;
-    String status;
+    @Enumerated(EnumType.STRING)
+    StatusType status;
     @ManyToOne
     @JoinColumn(name = "user_id")
     User userOrder;

@@ -22,6 +22,6 @@ public class Category extends BaseEntity {
     String categoryName;
     String categoryDescription;
     String icon;
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "categories")
     List<Brand> brands;
 }
