@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface CategoryService {
     List<CategoryVm> findAllCategories();
+
     List<CategoryVm> createCategoryVms(List<CategoryVm> categoryVmList);
+
     CategoryVm updateCategory(CategoryVm newCategoryVm);
 }

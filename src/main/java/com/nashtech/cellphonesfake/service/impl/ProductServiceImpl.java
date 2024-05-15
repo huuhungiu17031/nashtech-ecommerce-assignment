@@ -16,10 +16,6 @@ import com.nashtech.cellphonesfake.view.PaginationVm;
 import com.nashtech.cellphonesfake.view.ProductCardVm;
 import com.nashtech.cellphonesfake.view.ProductDetailVm;
 import com.nashtech.cellphonesfake.view.ProductPostVm;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,15 +26,19 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
 @Service
 public class ProductServiceImpl implements ProductService {
-    ProductRepository productRepository;
-    ProductGalleryRepository productGalleryRepository;
-    CategoryRepository categoryRepository;
-    BrandRepository brandRepository;
+    private final ProductRepository productRepository;
+    private final ProductGalleryRepository productGalleryRepository;
+    private final CategoryRepository categoryRepository;
+    private final BrandRepository brandRepository;
+
+    public ProductServiceImpl(ProductRepository productRepository, ProductGalleryRepository productGalleryRepository, CategoryRepository categoryRepository, BrandRepository brandRepository) {
+        this.productRepository = productRepository;
+        this.productGalleryRepository = productGalleryRepository;
+        this.categoryRepository = categoryRepository;
+        this.brandRepository = brandRepository;
+    }
 
     @Override
     public ProductDetailVm getProductDetail(Long id) {
@@ -112,7 +112,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private Sort checkAndReturnSort(String field, String dir) {
-        if (dir.equalsIgnoreCase("asc") && field.equalsIgnoreCase("price")) return Sort.by(Sort.Direction.ASC, "price");
-        return Sort.by(Sort.Direction.DESC, "price");
+        String price = "price";
+        if (dir.equalsIgnoreCase("asc") && field.equalsIgnoreCase(price)) return Sort.by(Sort.Direction.ASC, price);
+        return Sort.by(Sort.Direction.DESC, price);
     }
 }

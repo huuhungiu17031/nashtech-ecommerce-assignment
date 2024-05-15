@@ -3,8 +3,10 @@ package com.nashtech.cellphonesfake.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -18,23 +20,21 @@ import java.time.Instant;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class BaseEntity {
 
     @CreatedDate
     @Column(updatable = false)
-    Instant createdAt;
+    private Instant createdAt;
 
     @CreatedBy
     @Column(updatable = false)
-    String createdBy;
+    private String createdBy;
 
     @LastModifiedDate
     @Column(insertable = false)
-    Instant updatedAt;
+    private Instant updatedAt;
 
     @LastModifiedBy
     @Column(insertable = false)
-    String updatedBy;
+    private String updatedBy;
 }

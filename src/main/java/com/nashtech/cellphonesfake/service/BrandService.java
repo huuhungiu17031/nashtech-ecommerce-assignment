@@ -9,7 +9,10 @@ import java.util.List;
 
 public interface BrandService {
     List<Brand> createNewBrands(List<BrandVm> newBrandVmList);
+
     List<BrandVm> findAllBrands();
+
     Brand updateBrand(Long id, BrandPostVm brandPostVm);
+
     List<BrandVm> findAllBrandsByCategoryId(Long categoryId);
 }

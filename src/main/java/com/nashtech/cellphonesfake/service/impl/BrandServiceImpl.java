@@ -8,26 +8,24 @@ import com.nashtech.cellphonesfake.repository.BrandRepository;
 import com.nashtech.cellphonesfake.service.BrandService;
 import com.nashtech.cellphonesfake.view.BrandPostVm;
 import com.nashtech.cellphonesfake.view.BrandVm;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 public class BrandServiceImpl implements BrandService {
-    BrandRepository brandRepository;
+    private final BrandRepository brandRepository;
+
+    public BrandServiceImpl(BrandRepository brandRepository) {
+        this.brandRepository = brandRepository;
+    }
 
     @Override
     public List<Brand> createNewBrands(List<BrandVm> newBrandVmList) {
-        return newBrandVmList.stream().map(brandVm -> {
-            return brandRepository.save(
-                    BrandMapper.INSTANCE.toBrand(brandVm)
-            );
-        }).toList();
+        return newBrandVmList.stream().map(brandVm -> brandRepository.save(
+                        BrandMapper.INSTANCE.toBrand(brandVm)
+                )
+        ).toList();
     }
 
     @Override
@@ -40,7 +38,8 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public Brand updateBrand(Long id, BrandPostVm brandPostVm) {
-        brandRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Brand", id)));
+        if (brandRepository.findById(id).isEmpty())
+            throw new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Brand", id));
         Brand newBrand = BrandMapper.INSTANCE.fromBrandPostVmToBrand(brandPostVm);
         newBrand.setId(id);
         return brandRepository.save(newBrand);
