@@ -16,5 +16,6 @@ logging:
       hibernate:
         SQL: trace
 
-role_user: ROLE_USER
-role_admin: ROLE_ADMIN
+role_user: USER
+role_admin: ADMIN
+token_secret_key: 716B14F1B162E3CC4674CCE4FAD94E3EA2E4E4583FEB6CBAAE8861B352

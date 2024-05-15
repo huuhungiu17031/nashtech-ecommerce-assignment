@@ -7,21 +7,18 @@ import com.nashtech.cellphonesfake.model.Category;
 import com.nashtech.cellphonesfake.repository.CategoryRepository;
 import com.nashtech.cellphonesfake.service.CategoryService;
 import com.nashtech.cellphonesfake.view.CategoryVm;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@Slf4j
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+
+    public CategoryServiceImpl(final CategoryRepository categoryRepository) {
+        this.categoryRepository = categoryRepository;
+    }
 
     @Override
     public List<CategoryVm> findAllCategories() {

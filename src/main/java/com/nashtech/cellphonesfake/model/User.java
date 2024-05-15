@@ -1,6 +1,16 @@
 package com.nashtech.cellphonesfake.model;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,14 +30,11 @@ public class User {
     String email;
     @Column(nullable = false)
     String password;
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     List<Role> listRole;
-    @OneToOne(mappedBy = "userCart", fetch = FetchType.EAGER)
-    Cart cart;
-    @OneToMany (mappedBy = "userOrder", fetch = FetchType.EAGER)
-    List<Order> listOrder;
 }

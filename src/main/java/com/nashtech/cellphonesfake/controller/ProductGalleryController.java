@@ -2,9 +2,6 @@ package com.nashtech.cellphonesfake.controller;
 
 import com.nashtech.cellphonesfake.service.ProductGalleryService;
 import com.nashtech.cellphonesfake.view.ProductGalleryVm;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +13,12 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping("/product-gallery")
-@RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductGalleryController {
-    ProductGalleryService productGalleryService;
+    private final ProductGalleryService productGalleryService;
+
+    public ProductGalleryController(ProductGalleryService productGalleryService) {
+        this.productGalleryService = productGalleryService;
+    }
 
     @GetMapping("/{productId}")
     public ResponseEntity<Collection<ProductGalleryVm>> getProductGalleryByProductId(@PathVariable Long productId) {

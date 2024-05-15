@@ -1,6 +1,13 @@
 package com.nashtech.cellphonesfake.model;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,11 +23,12 @@ public class CartDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
+    @Column(nullable = false)
     Long amount;
     @ManyToOne
-    @JoinColumn (name = "cart_id")
+    @JoinColumn(name = "cart_id", nullable = false)
     Cart cart;
     @ManyToOne
-    @JoinColumn (name = "product_id")
+    @JoinColumn (name = "product_id", nullable = false)
     Product product;
 }
