@@ -10,7 +10,7 @@ import java.util.List;
 public record ProductPostVm(
         Long id,
         @NotNull String productName,
-        @NotNull Double price,
+        @NotNull Long price,
         @Enumerated(EnumType.STRING)
         ProductType type,
         @NotNull Long stockQuantity,

@@ -1,6 +1,4 @@
 package com.nashtech.cellphonesfake.view;
 
-import jakarta.validation.constraints.NotBlank;
-
-public record CartDetailRequest(@NotBlank Long productId, @NotBlank Integer amount) {
+public record CartDetailRequest(Long productId, Long amount) {
 }

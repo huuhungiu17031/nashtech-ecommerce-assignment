@@ -57,7 +57,6 @@ public class UserServiceImpl implements UserService {
     public String register(RegisterPostVm registerPostVm) {
         User user = UserMapper.INSTANCE.toUser(registerPostVm);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        log.info("Registering user: {}, {}", user.getEmail(), user.getPassword());
         userRepository.save(user);
         cartService.createCart(userRepository.save(user));
         return "Registered Successfully";

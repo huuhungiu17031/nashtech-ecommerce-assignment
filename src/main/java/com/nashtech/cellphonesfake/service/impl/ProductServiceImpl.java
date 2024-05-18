@@ -1,16 +1,18 @@
 package com.nashtech.cellphonesfake.service.impl;
 
 import com.nashtech.cellphonesfake.constant.Error;
+import com.nashtech.cellphonesfake.enumeration.PaymentMethod;
+import com.nashtech.cellphonesfake.exception.BadRequestException;
 import com.nashtech.cellphonesfake.exception.NotFoundException;
 import com.nashtech.cellphonesfake.mapper.ProductMapper;
 import com.nashtech.cellphonesfake.model.Brand;
 import com.nashtech.cellphonesfake.model.Category;
 import com.nashtech.cellphonesfake.model.Product;
 import com.nashtech.cellphonesfake.model.ProductGallery;
-import com.nashtech.cellphonesfake.repository.BrandRepository;
-import com.nashtech.cellphonesfake.repository.CategoryRepository;
 import com.nashtech.cellphonesfake.repository.ProductGalleryRepository;
 import com.nashtech.cellphonesfake.repository.ProductRepository;
+import com.nashtech.cellphonesfake.service.BrandService;
+import com.nashtech.cellphonesfake.service.CategoryService;
 import com.nashtech.cellphonesfake.service.ProductService;
 import com.nashtech.cellphonesfake.view.PaginationVm;
 import com.nashtech.cellphonesfake.view.ProductCardVm;
@@ -23,6 +25,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.invoke.MethodType;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,14 +33,14 @@ import java.util.Optional;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductGalleryRepository productGalleryRepository;
-    private final CategoryRepository categoryRepository;
-    private final BrandRepository brandRepository;
+    private final CategoryService categoryService;
+    private final BrandService brandService;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductGalleryRepository productGalleryRepository, CategoryRepository categoryRepository, BrandRepository brandRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, ProductGalleryRepository productGalleryRepository, CategoryService categoryService, BrandService brandService) {
         this.productRepository = productRepository;
         this.productGalleryRepository = productGalleryRepository;
-        this.categoryRepository = categoryRepository;
-        this.brandRepository = brandRepository;
+        this.categoryService = categoryService;
+        this.brandService = brandService;
     }
 
     @Override
@@ -85,17 +88,11 @@ public class ProductServiceImpl implements ProductService {
         Product newProduct = ProductMapper.INSTANCE.toProduct(productPostVm);
 
         if (productPostVm.categoryId() != null) {
-            Category category = categoryRepository.findById(productPostVm.categoryId())
-                    .orElseThrow(
-                            () -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Category", productPostVm.categoryId()))
-                    );
+            Category category = categoryService.findCategoryById(productPostVm.categoryId());
             newProduct.setCategory(category);
         }
         if (productPostVm.brandId() != null) {
-            Brand brand = brandRepository.findById(productPostVm.brandId())
-                    .orElseThrow(
-                            () -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Brand", productPostVm.categoryId()))
-                    );
+            Brand brand = brandService.findBrandById(productPostVm.brandId());
             newProduct.setBrand(brand);
         }
 
@@ -109,6 +106,34 @@ public class ProductServiceImpl implements ProductService {
                 productGalleryRepository.save(productGallery);
             });
         }
+    }
+
+    @Override
+    public Product findProductById(Long id) {
+        return productRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Product", id)));
+    }
+
+    @Transactional
+    @Override
+    public Product checkProductAmountAndReduceStockQuantity(Long productId, Long amount, PaymentMethod paymentMethod) {
+        Product product = findProductById(productId);
+        if (product.getStockQuantity() == 0) {
+            product.setAvailable(false);
+            productRepository.save(product);
+            throw new BadRequestException("Product is out of stock");
+        }
+        if (amount < product.getStockQuantity() && paymentMethod.equals(PaymentMethod.SHIP_CODE)) {
+            Long newStockQuantity = product.getStockQuantity() - amount;
+            product.setStockQuantity(newStockQuantity);
+            return productRepository.save(product);
+        }
+        if (amount < product.getStockQuantity() && paymentMethod.equals(PaymentMethod.VN_PAY)) return product;
+        throw new BadRequestException("Invalid product amount");
+    }
+
+    @Override
+    public void saveProduct(Product product) {
+        productRepository.save(product);
     }
 
     private Sort checkAndReturnSort(String field, String dir) {

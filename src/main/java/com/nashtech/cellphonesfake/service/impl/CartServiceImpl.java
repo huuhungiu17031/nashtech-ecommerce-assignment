@@ -6,9 +6,10 @@ import com.nashtech.cellphonesfake.model.Cart;
 import com.nashtech.cellphonesfake.model.CartDetail;
 import com.nashtech.cellphonesfake.model.User;
 import com.nashtech.cellphonesfake.repository.CartRepository;
+import com.nashtech.cellphonesfake.service.CartDetailService;
 import com.nashtech.cellphonesfake.service.CartService;
 import com.nashtech.cellphonesfake.view.CartDetailRequest;
-import lombok.extern.log4j.Log4j;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,9 +18,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
+    private final CartDetailService cartDetailService;
 
-    public CartServiceImpl(CartRepository cartRepository) {
+    public CartServiceImpl(CartRepository cartRepository, CartDetailService cartDetailService) {
         this.cartRepository = cartRepository;
+        this.cartDetailService = cartDetailService;
     }
 
     @Override
@@ -29,30 +32,23 @@ public class CartServiceImpl implements CartService {
         cartRepository.save(cart);
     }
 
+    @Transactional
     @Override
-    public String addToCart(CartDetailRequest cartDetail) {
+    public String addToCart(CartDetailRequest cartDetailRequest) {
         String principal = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Cart cart = findCartByEmail(principal);
-
-        return "";
+        Cart cart = findCartByUserEmail(principal);
+        CartDetail cartDetail = cartDetailService.findByCartIdAndProductId(cart.getId(), cartDetailRequest.productId(), cartDetailRequest.amount(), cart);
+        if (cartDetail.getId() != null) {
+            cartDetail.setAmount(cartDetail.getAmount() + cartDetailRequest.amount());
+        }
+        cartDetailService.saveCartDetail(cartDetail);
+        return "Add successfully";
     }
 
-    @Override
-    public String removeToCart(CartDetail item, Long userId) {
-        return "";
+
+    private Cart findCartByUserEmail(String email) {
+        return cartRepository.findCartByUser_Email(email)
+                .orElseThrow(() -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Email", email)));
     }
 
-    @Override
-    public void save(Cart cart) {
-
-    }
-
-    @Override
-    public Cart getCart(Long userId) {
-        return cartRepository.findCartByUser_Id(userId).orElseThrow(() -> new NotFoundException(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "User", userId));
-    }
-
-    private Cart findCartByEmail(String email) {
-        return cartRepository.findCartByUser_Email(email).orElseThrow(() -> new NotFoundException(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Email", email));
-    }
 }

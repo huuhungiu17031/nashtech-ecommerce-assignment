@@ -1,8 +1,7 @@
 package com.nashtech.cellphonesfake.filter;
 
-import com.nashtech.cellphonesfake.model.User;
 import com.nashtech.cellphonesfake.service.JwtService;
-import com.nashtech.cellphonesfake.service.UserService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,11 +21,9 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
-    private final UserService userService;
 
-    public JwtFilter(JwtService jwtService, UserService userService) {
+    public JwtFilter(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.userService = userService;
     }
 
     @Override
@@ -40,16 +37,17 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null && Boolean.TRUE.equals(jwtService.isTokenValid(token, email))) {
-            User user = userService.findByEmail(email);
-            List<GrantedAuthority> roles = new ArrayList<>();
-            user.getListRole().forEach(role -> {
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role.getRoleName());
-                roles.add(authority);
+            Claims claims = jwtService.extractAllClaims(token);
+            List<String> roles = (List<String>) claims.get("roles");
+            List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+            roles.forEach(role -> {
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
+                grantedAuthorities.add(authority);
             });
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                     email,
                     null,
-                    roles);
+                    grantedAuthorities);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
