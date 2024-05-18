@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 public record ProductCardVm(
         Long id,
         @NotBlank String productName,
-        @NotBlank Double price,
+        @NotBlank Long price,
         String thumbnail
 ) {
 }

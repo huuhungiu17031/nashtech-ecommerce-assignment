@@ -26,12 +26,14 @@ public class Product extends BaseEntity {
     Long id;
     @Column(unique = true)
     String productName;
-    Double price;
+    Long price;
     @Enumerated(EnumType.STRING)
     ProductType type;
     Long stockQuantity;
     @Column(length = 5000)
     String description;
+    @Column
+    Boolean available = true;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     Brand brand;

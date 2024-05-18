@@ -15,4 +15,6 @@ public interface BrandService {
     Brand updateBrand(Long id, BrandPostVm brandPostVm);
 
     List<BrandVm> findAllBrandsByCategoryId(Long categoryId);
+
+    Brand findBrandById(Long id);
 }

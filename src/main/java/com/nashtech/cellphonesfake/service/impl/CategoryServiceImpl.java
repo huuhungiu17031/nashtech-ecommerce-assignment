@@ -37,8 +37,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryVm updateCategory(CategoryVm newCategoryVm) {
-        return categoryRepository.findById(newCategoryVm.id()).map(CategoryMapper.INSTANCE::toCategoryVm).orElseThrow(
-                () -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Category", newCategoryVm.id()))
+        return CategoryMapper.INSTANCE.toCategoryVm(findCategoryById(newCategoryVm.id()));
+    }
+
+    @Override
+    public Category findCategoryById(Long id) {
+        return categoryRepository.findById(id).orElseThrow(
+                () -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Category", id))
         );
     }
 

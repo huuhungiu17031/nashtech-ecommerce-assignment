@@ -38,8 +38,7 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public Brand updateBrand(Long id, BrandPostVm brandPostVm) {
-        if (brandRepository.findById(id).isEmpty())
-            throw new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Brand", id));
+        findBrandById(id);
         Brand newBrand = BrandMapper.INSTANCE.fromBrandPostVmToBrand(brandPostVm);
         newBrand.setId(id);
         return brandRepository.save(newBrand);
@@ -48,5 +47,10 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public List<BrandVm> findAllBrandsByCategoryId(Long categoryId) {
         return brandRepository.findDistinctByCategoriesId(categoryId).stream().map(BrandMapper.INSTANCE::toBrandVm).toList();
+    }
+
+    @Override
+    public Brand findBrandById(Long id) {
+        return brandRepository.findById(id).orElseThrow(() -> new NotFoundException(String.format(Error.Message.RESOURCE_NOT_FOUND_BY_ID, "Brand", id)));
     }
 }
