@@ -1,6 +1,7 @@
 package com.nashtech.cellphonesfake.enumeration;
 
-public enum PaymentType {
+public enum StatusType {
     PENDING,
-    COMPLETED
+    COMPLETED,
+    CANCELLED,
 }
