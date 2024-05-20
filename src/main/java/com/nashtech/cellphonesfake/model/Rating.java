@@ -1,26 +1,25 @@
 package com.nashtech.cellphonesfake.model;
 
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
-
-import java.util.List;
 
 @Getter
 @Setter
-@Entity(name = "role")
-@ToString
-public class Role {
+@Entity(name = "rating")
+public class Rating extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String roleName;
-    @ManyToMany(mappedBy = "listRole")
-    private List<User> userList;
+    private Integer score;
+    private String comment;
+    private Boolean isPublish = true;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 }

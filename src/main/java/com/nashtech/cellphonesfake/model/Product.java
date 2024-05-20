@@ -11,34 +11,31 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity(name = "product")
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
     @Column(unique = true)
-    String productName;
-    Long price;
+    private String productName;
+    private Long price;
     @Enumerated(EnumType.STRING)
-    ProductType type;
-    Long stockQuantity;
+    private ProductType type;
+    private Long stockQuantity;
     @Column(length = 5000)
-    String description;
+    private String description;
     @Column
-    Boolean available = true;
+    private Boolean available = true;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
-    Brand brand;
+    private Brand brand;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    Category category;
+    private Category category;
 }

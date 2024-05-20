@@ -1,11 +1,13 @@
 package com.nashtech.cellphonesfake.configuration;
 
+import com.nashtech.cellphonesfake.audit.ApplicationAuditAware;
 import com.nashtech.cellphonesfake.filter.JwtFilter;
 import com.nashtech.cellphonesfake.provider.CustomAuthedProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -19,8 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
-
-import java.lang.reflect.Method;
 
 @Configuration
 @EnableWebSecurity
@@ -52,6 +52,11 @@ public class SecurityConfig {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
                 .authenticationProvider(customAuthedProvider)
                 .build();
+    }
+
+    @Bean
+    public AuditorAware<String> auditorAware() {
+        return new ApplicationAuditAware();
     }
 
 

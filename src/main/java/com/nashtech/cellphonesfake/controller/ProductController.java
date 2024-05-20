@@ -1,5 +1,6 @@
 package com.nashtech.cellphonesfake.controller;
 
+import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.service.ProductService;
 import com.nashtech.cellphonesfake.view.PaginationVm;
 import com.nashtech.cellphonesfake.view.ProductDetailVm;
@@ -43,6 +44,6 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<String> createProduct(@Valid @RequestBody ProductPostVm productPostVm) {
         productService.createProduct(productPostVm);
-        return new ResponseEntity<>("Create product successfully", HttpStatus.CREATED);
+        return new ResponseEntity<>(Message.PRODUCT_CREATED, HttpStatus.CREATED);
     }
 }
