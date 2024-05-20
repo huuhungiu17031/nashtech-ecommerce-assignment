@@ -45,13 +45,16 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PaymentResponse createPayment(HttpServletRequest request, Long orderId) {
         Order order = orderService.findOrderById(orderId);
+        if (order.getStatus().equals(StatusType.COMPLETED)) return new PaymentResponse("Ok", "Successfully", null);
         String returnUrl = "http://localhost:5174/checkout/" + orderId;
-        if (order != null && order.getPaymentMethod().equals(PaymentMethod.VN_PAY)) {
+        if (order.getPaymentMethod().equals(PaymentMethod.VN_PAY)) {
             long amount = order.getTotalMoney() * 100;
-            String vnpTxnRef = String.valueOf(order.getId());
             Map<String, String> vnpParams = new HashMap<>();
-            vnpParams.put("vnp_Version", "2.1.0");
-            vnpParams.put("vnp_Command", "pay");
+            String vnpTxnRef = VnPayConfig.getRandomNumber(8);
+            String vnpVersion = "2.1.0";
+            String vnpCommand = "pay";
+            vnpParams.put("vnp_Version", vnpVersion);
+            vnpParams.put("vnp_Command", vnpCommand);
             vnpParams.put("vnp_TmnCode", VnPayConfig.VNP_TMN_CODE);
             vnpParams.put("vnp_Amount", String.valueOf(amount));
             Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -75,14 +78,24 @@ public class PaymentServiceImpl implements PaymentService {
                     vnPayQueryAndSecureHash.secureHash();
             return new PaymentResponse("Ok", "Processing Payment", paymentUrl);
         }
-        if (order != null && order.getStatus().equals(StatusType.COMPLETED)) {
-            return new PaymentResponse("Ok", "Successfully", null);
-        }
         throw new BadRequestException("Payment failed");
     }
 
     @Override
     public PaymentResponse getPayment(PaymentGetVm paymentGetVm) {
+        Map<String, String> vnpParams = getStringStringMap(paymentGetVm);
+        VnPayQueryAndSecureHash vnPayQueryAndSecureHash = createVnPayQueryAndSecureHash(vnpParams);
+        String secureHash = vnPayQueryAndSecureHash.secureHash();
+        if (paymentGetVm.secureHash().equalsIgnoreCase(secureHash)) {
+            if (paymentGetVm.responseCode().equalsIgnoreCase("00"))
+                return generatePayment(StatusType.COMPLETED, paymentGetVm.orderId(), "Paid successfully");
+            if (paymentGetVm.responseCode().equalsIgnoreCase("01"))
+                return generatePayment(StatusType.PENDING, paymentGetVm.orderId(), "Payment is not completed");
+        }
+        throw new BadRequestException("Payment failed");
+    }
+
+    private static Map<String, String> getStringStringMap(PaymentGetVm paymentGetVm) {
         Map<String, String> vnpParams = new HashMap<>();
         vnpParams.put("vnp_Amount", String.valueOf(paymentGetVm.amount()));
         vnpParams.put("vnp_BankCode", paymentGetVm.bankCode());
@@ -99,16 +112,7 @@ public class PaymentServiceImpl implements PaymentService {
         vnpParams.put("vnp_TransactionNo", paymentGetVm.transactionNo());
         vnpParams.put("vnp_TransactionStatus", paymentGetVm.transactionStatus());
         vnpParams.put("vnp_TxnRef", paymentGetVm.txnRef());
-
-        VnPayQueryAndSecureHash vnPayQueryAndSecureHash = createVnPayQueryAndSecureHash(vnpParams);
-        String secureHash = vnPayQueryAndSecureHash.secureHash();
-        if (paymentGetVm.secureHash().equalsIgnoreCase(secureHash)) {
-            if (paymentGetVm.responseCode().equalsIgnoreCase("00"))
-                return generatePayment(StatusType.COMPLETED, paymentGetVm.orderId(), "Paid successfully");
-            if (paymentGetVm.responseCode().equalsIgnoreCase("01"))
-                return generatePayment(StatusType.PENDING, paymentGetVm.orderId(), "Payment is not completed");
-        }
-        throw new BadRequestException("Payment failed");
+        return vnpParams;
     }
 
 
