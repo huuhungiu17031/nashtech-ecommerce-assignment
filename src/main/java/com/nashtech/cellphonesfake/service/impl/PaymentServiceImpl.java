@@ -1,6 +1,8 @@
 package com.nashtech.cellphonesfake.service.impl;
 
 import com.nashtech.cellphonesfake.configuration.VnPayConfig;
+import com.nashtech.cellphonesfake.constant.Error;
+import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.enumeration.PaymentMethod;
 import com.nashtech.cellphonesfake.enumeration.StatusType;
 import com.nashtech.cellphonesfake.exception.BadRequestException;
@@ -17,15 +19,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -46,6 +42,8 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse createPayment(HttpServletRequest request, Long orderId) {
         Order order = orderService.findOrderById(orderId);
         if (order.getStatus().equals(StatusType.COMPLETED)) return new PaymentResponse("Ok", "Successfully", null);
+        if (order.getStatus().equals(StatusType.CANCELLED))
+            return new PaymentResponse("Cancelled", "This payment was cancelled", null);
         String returnUrl = "http://localhost:5174/checkout/" + orderId;
         if (order.getPaymentMethod().equals(PaymentMethod.VN_PAY)) {
             long amount = order.getTotalMoney() * 100;
@@ -71,28 +69,30 @@ public class PaymentServiceImpl implements PaymentService {
             calendar.add(Calendar.MINUTE, 15);
             String vnpExpireDate = dateFormat.format(calendar.getTime());
             vnpParams.put("vnp_ExpireDate", vnpExpireDate);
-            VnPayQueryAndSecureHash vnPayQueryAndSecureHash = createVnPayQueryAndSecureHash(vnpParams);
+            VnPayQueryAndSecureHash vnPayQueryAndSecureHash = VnPayConfig.hashAllFields(vnpParams);
             String paymentUrl = VnPayConfig.VNP_PAY_URL + "?" +
                     vnPayQueryAndSecureHash.query() +
                     "&vnp_SecureHash=" +
                     vnPayQueryAndSecureHash.secureHash();
             return new PaymentResponse("Ok", "Processing Payment", paymentUrl);
         }
-        throw new BadRequestException("Payment failed");
+        throw new BadRequestException(Error.Message.PAYMENT_FAILED);
     }
 
     @Override
     public PaymentResponse getPayment(PaymentGetVm paymentGetVm) {
         Map<String, String> vnpParams = getStringStringMap(paymentGetVm);
-        VnPayQueryAndSecureHash vnPayQueryAndSecureHash = createVnPayQueryAndSecureHash(vnpParams);
+        VnPayQueryAndSecureHash vnPayQueryAndSecureHash = VnPayConfig.hashAllFields(vnpParams);
         String secureHash = vnPayQueryAndSecureHash.secureHash();
         if (paymentGetVm.secureHash().equalsIgnoreCase(secureHash)) {
-            if (paymentGetVm.responseCode().equalsIgnoreCase("00"))
-                return generatePayment(StatusType.COMPLETED, paymentGetVm.orderId(), "Paid successfully");
-            if (paymentGetVm.responseCode().equalsIgnoreCase("01"))
-                return generatePayment(StatusType.PENDING, paymentGetVm.orderId(), "Payment is not completed");
+            if (paymentGetVm.transactionStatus().equalsIgnoreCase("00"))
+                return generatePayment(StatusType.COMPLETED, paymentGetVm.orderId(), Message.PAYMENT_COMPLETED);
+            if (paymentGetVm.transactionStatus().equalsIgnoreCase("01"))
+                return generatePayment(StatusType.PENDING, paymentGetVm.orderId(), Message.PAYMENT_PENDING);
+            if (paymentGetVm.transactionStatus().equalsIgnoreCase("02"))
+                return generatePayment(StatusType.CANCELLED, paymentGetVm.orderId(), Message.PAYMENT_CANCELLED);
         }
-        throw new BadRequestException("Payment failed");
+        throw new BadRequestException(Error.Message.PAYMENT_FAILED);
     }
 
     private static Map<String, String> getStringStringMap(PaymentGetVm paymentGetVm) {
@@ -115,36 +115,10 @@ public class PaymentServiceImpl implements PaymentService {
         return vnpParams;
     }
 
-
-    private VnPayQueryAndSecureHash createVnPayQueryAndSecureHash(Map<String, String> vnpParams) {
-        List<String> fieldNames = new ArrayList<>(vnpParams.keySet());
-        Collections.sort(fieldNames);
-        StringBuilder hashData = new StringBuilder();
-        StringBuilder query = new StringBuilder();
-        Iterator<String> iterator = fieldNames.iterator();
-        while (iterator.hasNext()) {
-            String fieldName = iterator.next();
-            String fieldValue = vnpParams.get(fieldName);
-            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
-                hashData.append(fieldName);
-                hashData.append('=');
-                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII));
-                query.append('=');
-                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
-                if (iterator.hasNext()) {
-                    query.append('&');
-                    hashData.append('&');
-                }
-            }
-        }
-        String queryUrl = query.toString();
-        String secureHash = VnPayConfig.hmacSHA512(VnPayConfig.VNP_HASH_SECRET, hashData.toString());
-        return new VnPayQueryAndSecureHash(queryUrl, secureHash);
-    }
-
     private PaymentResponse generatePayment(StatusType status, Long orderId, String message) {
         Order order = orderService.findOrderById(orderId);
+        if (order.getStatus().equals(StatusType.COMPLETED))
+            return new PaymentResponse(status.toString(), message, null);
         if (order.getStatus().equals(StatusType.PENDING) && status.equals(StatusType.COMPLETED)) {
             order.setStatus(StatusType.COMPLETED);
             orderDetailService.findByOrderId(orderId).forEach(orderDetail -> {
@@ -155,7 +129,6 @@ public class PaymentServiceImpl implements PaymentService {
             orderService.save(order);
             return new PaymentResponse(status.toString(), message, null);
         }
-        if (order.getStatus().equals(StatusType.COMPLETED)) return new PaymentResponse(status.toString(), message, null);
         order.setStatus(status);
         orderService.save(order);
         return new PaymentResponse(status.toString(), message, null);

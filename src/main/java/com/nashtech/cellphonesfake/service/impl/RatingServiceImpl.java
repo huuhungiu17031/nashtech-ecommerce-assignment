@@ -42,7 +42,7 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public List<RatingVm> getPublishRating(Long productId) {
         productService.findProductById(productId);
-        return mapRatings(ratingRepository.findByProduct_IdAndIsPublishedIsTrue(productId));
+        return mapRatings(ratingRepository.findByProduct_IdAndIsPublishIsTrue(productId));
     }
 
     private List<RatingVm> mapRatings(List<Rating> ratings) {

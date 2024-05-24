@@ -30,7 +30,7 @@ public class ProductController {
                                                        @RequestParam(required = false, defaultValue = "desc") String dir,
                                                        @RequestParam(required = false) Long brandId,
                                                        @RequestParam(required = false, defaultValue = "0") int page,
-                                                       @RequestParam(required = false, defaultValue = "2") int size
+                                                       @RequestParam(required = false, defaultValue = "10") int size
     ) {
         return new ResponseEntity<>(productService.getProductCardVmByCategory(categoryId, brandId, field, dir, page, size), HttpStatus.OK);
     }

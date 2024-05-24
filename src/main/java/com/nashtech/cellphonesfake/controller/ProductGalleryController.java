@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/product-gallery")
@@ -21,7 +21,12 @@ public class ProductGalleryController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<Collection<ProductGalleryVm>> getProductGalleryByProductId(@PathVariable Long productId) {
+    public ResponseEntity<List<ProductGalleryVm>> getProductGalleryByProductId(@PathVariable Long productId) {
         return new ResponseEntity<>(productGalleryService.getListGalleryByProductId(productId), HttpStatus.OK);
+    }
+
+    @GetMapping("/{productId}/cartDetail")
+    public ResponseEntity<ProductGalleryVm> getProductGalleryInCart(@PathVariable Long productId) {
+        return new ResponseEntity<>(productGalleryService.getListGalleryInCart(productId), HttpStatus.OK);
     }
 }

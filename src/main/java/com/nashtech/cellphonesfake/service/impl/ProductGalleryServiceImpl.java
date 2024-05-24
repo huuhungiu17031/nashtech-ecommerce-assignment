@@ -20,4 +20,9 @@ public class ProductGalleryServiceImpl implements ProductGalleryService {
     public List<ProductGalleryVm> getListGalleryByProductId(Long productId) {
         return productGalleryRepository.findByProduct_Id(productId).stream().map(ProductGalleryMapper.INSTANCE::toProductGalleryVm).toList();
     }
+
+    @Override
+    public ProductGalleryVm getListGalleryInCart(Long productId) {
+        return productGalleryRepository.findByProductIdAndThumbnailTrue(productId).map(ProductGalleryMapper.INSTANCE::toProductGalleryVm).orElse(null);
+    }
 }

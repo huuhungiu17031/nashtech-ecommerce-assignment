@@ -1,6 +1,7 @@
 package com.nashtech.cellphonesfake.service.impl;
 
 import com.nashtech.cellphonesfake.constant.Error;
+import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.exception.NotFoundException;
 import com.nashtech.cellphonesfake.model.Cart;
 import com.nashtech.cellphonesfake.model.CartDetail;
@@ -42,9 +43,8 @@ public class CartServiceImpl implements CartService {
             cartDetail.setAmount(cartDetail.getAmount() + cartDetailRequest.amount());
         }
         cartDetailService.saveCartDetail(cartDetail);
-        return "Add successfully";
+        return Message.CART_ADD_SUCCESS;
     }
-
 
     private Cart findCartByUserEmail(String email) {
         return cartRepository.findCartByUser_Email(email)

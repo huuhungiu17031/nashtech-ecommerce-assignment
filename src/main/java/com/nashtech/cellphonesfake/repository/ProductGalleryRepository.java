@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface ProductGalleryRepository extends JpaRepository<ProductGallery, Long> {
     List<ProductGallery> findByProduct_Id(Long productId);
     Optional<ProductGallery> findByProductIdAndThumbnailTrue(Long productId);
+    Optional<ProductGallery> findByProduct_IdAndThumbnailIsTrue(Long productId);
 }

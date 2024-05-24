@@ -31,6 +31,10 @@ public class SecurityConfig {
     private String admin;
     private final JwtFilter jwtFilter;
     private final CustomAuthedProvider customAuthedProvider;
+    private static final String[] WHITE_LIST_URL = {
+            "/swagger-ui/**",
+            "/swagger-ui.html"};
+
     public SecurityConfig(@Lazy JwtFilter jwtFilter, CustomAuthedProvider customAuthedProvider) {
         this.jwtFilter = jwtFilter;
         this.customAuthedProvider = customAuthedProvider;
@@ -59,7 +63,6 @@ public class SecurityConfig {
         return new ApplicationAuditAware();
     }
 
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
@@ -67,8 +70,11 @@ public class SecurityConfig {
                 .cors(config -> config.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers(HttpMethod.POST, "/brand").hasRole(admin)
-                        .anyRequest().permitAll())
+                        authorize
+                                .requestMatchers(WHITE_LIST_URL).permitAll()
+                                .requestMatchers(HttpMethod.POST, "/order", "/cart").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/brand", "/product", "/category").hasRole(admin)
+                                .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();

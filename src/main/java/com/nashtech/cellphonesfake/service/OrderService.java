@@ -5,7 +5,7 @@ import com.nashtech.cellphonesfake.model.Order;
 import com.nashtech.cellphonesfake.view.OrderVm;
 
 public interface OrderService {
-    void createOrder(OrderVm orderVm);
+    Long createOrder(OrderVm orderVm);
     Order findOrderById(Long id);
     void save(Order order);
     void updateOrder(Long order, StatusType status);
