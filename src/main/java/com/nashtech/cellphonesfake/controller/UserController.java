@@ -4,10 +4,13 @@ import com.nashtech.cellphonesfake.service.UserService;
 import com.nashtech.cellphonesfake.view.JwtResponse;
 import com.nashtech.cellphonesfake.view.LoginVm;
 import com.nashtech.cellphonesfake.view.RegisterPostVm;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,5 +34,11 @@ public class UserController {
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginVm loginVm) {
         JwtResponse jwtResponse = userService.login(loginVm);
         return new ResponseEntity<>(jwtResponse, HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+        userService.logout(request, response, authentication);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

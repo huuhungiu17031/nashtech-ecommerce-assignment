@@ -1,6 +1,7 @@
 package com.nashtech.cellphonesfake.service.impl;
 
 import com.nashtech.cellphonesfake.constant.Error;
+import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.exception.NotFoundException;
 import com.nashtech.cellphonesfake.model.Cart;
 import com.nashtech.cellphonesfake.model.CartDetail;
@@ -29,7 +30,7 @@ public class CartDetailServiceImpl implements CartDetailService {
     public String deleteCartDetail(Long cartDetailId) {
         CartDetail cartDetail = findCartDetailById(cartDetailId);
         cartDetailRepository.delete(cartDetail);
-        return "Deleted successfully from cart";
+        return Message.CART_DETAIL_DELETED;
     }
 
     @Override
@@ -41,14 +42,14 @@ public class CartDetailServiceImpl implements CartDetailService {
             cartDetail.setAmount(amount);
             cartDetailRepository.save(cartDetail);
         }
-        return "Updated successfully from cart";
+        return Message.CART_DETAIL_UPDATED;
     }
 
     @Override
     public String deleteAllCartDetails(Long cartId) {
         List<CartDetail> cartDetails = cartDetailRepository.findByCart_Id(cartId);
         cartDetailRepository.deleteAll(cartDetails);
-        return "Deleted successfully from cart";
+        return Message.CART_DETAIL_DELETED;
     }
 
     @Override

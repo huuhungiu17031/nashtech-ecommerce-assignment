@@ -36,13 +36,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public void createOrder(OrderVm orderVm) {
+    public Long createOrder(OrderVm orderVm) {
         Long totalSize = 0L;
         for (OrderDetailVm orderDetailVm : orderVm.orderDetailVms()) {
             totalSize += orderDetailVm.amount();
         }
-        if (orderVm.orderDetailVms().isEmpty()) throw new BadRequestException("No product was found");
-        if (totalSize > 5) throw new BadRequestException("Too many products");
+        if (orderVm.orderDetailVms().isEmpty()) throw new BadRequestException(Error.Message.NO_PRODUCTS_FOUND);
+        if (totalSize > 10) throw new BadRequestException(Error.Message.TOO_MANY_PRODUCTS);
         Order order = new Order();
         AtomicLong totalMoney = new AtomicLong(0L);
         List<OrderDetail> orderDetailsWithoutCart = orderVm.orderDetailVms().stream().map(orderDetailVm -> {
@@ -61,6 +61,7 @@ public class OrderServiceImpl implements OrderService {
             orderDetail.setOrder(updatedOrder);
             orderDetailService.saveOrderDetail(orderDetail);
         }
+        return updatedOrder.getId();
     }
 
     @Override
