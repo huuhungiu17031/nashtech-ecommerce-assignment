@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ProductGalleryService {
     List<ProductGalleryVm> getListGalleryByProductId(Long productId);
+    ProductGalleryVm getListGalleryInCart(Long productId);
 }

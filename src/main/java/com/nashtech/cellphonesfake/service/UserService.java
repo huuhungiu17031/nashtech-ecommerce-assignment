@@ -4,6 +4,9 @@ import com.nashtech.cellphonesfake.model.User;
 import com.nashtech.cellphonesfake.view.JwtResponse;
 import com.nashtech.cellphonesfake.view.LoginVm;
 import com.nashtech.cellphonesfake.view.RegisterPostVm;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.core.Authentication;
 
 
 public interface UserService {
@@ -13,5 +16,5 @@ public interface UserService {
 
     User findByEmail(String email);
 
-    User findById(int id);
+    void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication);
 }

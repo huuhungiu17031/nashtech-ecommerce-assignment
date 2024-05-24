@@ -25,9 +25,9 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createOrder(@RequestBody OrderVm orderVm) {
-        orderService.createOrder(orderVm);
-        return ResponseEntity.ok("Order created");
+    public ResponseEntity<Long> createOrder(@RequestBody OrderVm orderVm) {
+        Long id = orderService.createOrder(orderVm);
+        return ResponseEntity.ok(id);
     }
 
     @PutMapping("/{id}")

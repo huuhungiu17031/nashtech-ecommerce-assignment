@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface RatingRepository extends JpaRepository<Rating, Long> {
     List<Rating> findByProduct_Id(Long productId);
-    List<Rating> findByProduct_IdAndIsPublishedIsTrue(Long productId);
+    List<Rating> findByProduct_IdAndIsPublishIsTrue(Long productId);
 }

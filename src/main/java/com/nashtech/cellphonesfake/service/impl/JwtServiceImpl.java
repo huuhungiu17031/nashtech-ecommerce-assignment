@@ -1,7 +1,6 @@
 package com.nashtech.cellphonesfake.service.impl;
 
 import com.nashtech.cellphonesfake.service.JwtService;
-import com.nashtech.cellphonesfake.view.JwtResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -9,6 +8,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
 
 import java.security.Key;
 import java.util.Date;
@@ -31,16 +31,32 @@ public class JwtServiceImpl implements JwtService {
         return claims.getExpiration();
     }
 
-    @Override
-    public String generateToken(String email, Map<String, Object> extraClaims) {
-        int accessTokenDuration = 48 * 60 * 60 * 1000;
+    private String generateToken(String email, Map<String, Object> extraClaims, int expiration) {
         return Jwts.builder()
                 .setClaims(extraClaims)
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + accessTokenDuration))
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    @Override
+    public String generateAccessToken(String email, List<String> roles) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("roles", roles);
+        int accessTokenValiditySeconds = 48 * 60 * 60 * 1000;
+        return generateToken(email, extraClaims, accessTokenValiditySeconds);
+    }
+
+
+    @Override
+    public String generateRefreshToken(String email) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        UUID uuid = UUID.randomUUID();
+        extraClaims.put("uuid", uuid.toString());
+        int refreshTokenValiditySeconds = 72 * 60 * 60 * 1000;
+        return generateToken(email, extraClaims, refreshTokenValiditySeconds);
     }
 
     @Override
@@ -59,10 +75,5 @@ public class JwtServiceImpl implements JwtService {
         return !extractExpiration(token).before(new Date());
     }
 
-    @Override
-    public JwtResponse generateToken(String email, List<String> roles) {
-        Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("roles", roles);
-        return new JwtResponse(generateToken(email, extraClaims), null);
-    }
+
 }

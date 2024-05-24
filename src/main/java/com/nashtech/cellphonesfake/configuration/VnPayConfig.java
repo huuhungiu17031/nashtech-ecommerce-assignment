@@ -1,10 +1,12 @@
 package com.nashtech.cellphonesfake.configuration;
 
+import com.nashtech.cellphonesfake.view.VnPayQueryAndSecureHash;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +21,7 @@ public class VnPayConfig {
     public static final String VNP_PAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static final String VNP_TMN_CODE = "3V84IZXM";
     public static final String VNP_HASH_SECRET = "2ZMRUIQYEPFSQWO1TJ81KRZE3O8I5F3Q";
-    public static final String VNP_API_URL = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    private static final String ALGORITHM_HMAC = "HmacSHA512";
 
     private VnPayConfig() {
     }
@@ -47,36 +49,33 @@ public class VnPayConfig {
         return digest;
     }
 
-    public static String sha256(String message) {
-        String digest = null;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            digest = getString(message, md);
-        } catch (NoSuchAlgorithmException ex) {
-            digest = "";
-        }
-        return digest;
-    }
 
-    //Util for VNPAY
-    public static String hashAllFields(Map<String, String> fields) {
+    public static VnPayQueryAndSecureHash hashAllFields(Map<String, String> fields) {
         List<String> fieldNames = new ArrayList<>(fields.keySet());
         Collections.sort(fieldNames);
-        StringBuilder sb = new StringBuilder();
-        Iterator<String> itr = fieldNames.iterator();
-        while (itr.hasNext()) {
-            String fieldName = itr.next();
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+
+        Iterator<String> iterator = fieldNames.iterator();
+        while (iterator.hasNext()) {
+            String fieldName = iterator.next();
             String fieldValue = fields.get(fieldName);
             if ((fieldValue != null) && (!fieldValue.isEmpty())) {
-                sb.append(fieldName);
-                sb.append("=");
-                sb.append(fieldValue);
+                hashData.append(fieldName);
+                hashData.append("=");
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII));
+                query.append('=');
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
             }
-            if (itr.hasNext()) {
-                sb.append("&");
+            if (iterator.hasNext()) {
+                query.append('&');
+                hashData.append("&");
             }
         }
-        return hmacSHA512(VNP_HASH_SECRET, sb.toString());
+        String secureHash = hmacSHA512(VNP_HASH_SECRET, hashData.toString());
+        String queryUrl = query.toString();
+        return new VnPayQueryAndSecureHash(queryUrl, secureHash);
     }
 
     public static String hmacSHA512(final String key, final String data) {
@@ -84,9 +83,9 @@ public class VnPayConfig {
             if (key == null || data == null) {
                 throw new NullPointerException();
             }
-            final Mac hmac512 = Mac.getInstance("HmacSHA512");
+            final Mac hmac512 = Mac.getInstance(ALGORITHM_HMAC);
             byte[] hmacKeyBytes = key.getBytes();
-            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
+            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, ALGORITHM_HMAC);
             hmac512.init(secretKey);
             byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
             byte[] result = hmac512.doFinal(dataBytes);
