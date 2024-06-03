@@ -25,6 +25,7 @@ public class Category extends BaseEntity {
     private String categoryName;
     private String categoryDescription;
     private String icon;
+    private Boolean isPublished = Boolean.TRUE;
     @ManyToMany(mappedBy = "categories")
     private List<Brand> brands;
 }

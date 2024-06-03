@@ -8,6 +8,7 @@ import com.nashtech.cellphonesfake.enumeration.StatusType;
 import com.nashtech.cellphonesfake.exception.BadRequestException;
 import com.nashtech.cellphonesfake.model.Order;
 import com.nashtech.cellphonesfake.model.Product;
+import com.nashtech.cellphonesfake.service.CartDetailService;
 import com.nashtech.cellphonesfake.service.OrderDetailService;
 import com.nashtech.cellphonesfake.service.OrderService;
 import com.nashtech.cellphonesfake.service.PaymentService;
@@ -31,11 +32,16 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final OrderDetailService orderDetailService;
     private final ProductService productService;
-
-    public PaymentServiceImpl(OrderService orderService, OrderDetailService orderDetailService, ProductService productService) {
+    private final CartDetailService cartDetailService;
+    public PaymentServiceImpl(
+            OrderService orderService,
+            OrderDetailService orderDetailService,
+            ProductService productService,
+            CartDetailService cartDetailService) {
         this.orderDetailService = orderDetailService;
         this.orderService = orderService;
         this.productService = productService;
+        this.cartDetailService = cartDetailService;
     }
 
     @Override
@@ -85,8 +91,10 @@ public class PaymentServiceImpl implements PaymentService {
         VnPayQueryAndSecureHash vnPayQueryAndSecureHash = VnPayConfig.hashAllFields(vnpParams);
         String secureHash = vnPayQueryAndSecureHash.secureHash();
         if (paymentGetVm.secureHash().equalsIgnoreCase(secureHash)) {
-            if (paymentGetVm.transactionStatus().equalsIgnoreCase("00"))
+            if (paymentGetVm.transactionStatus().equalsIgnoreCase("00")){
+                 
                 return generatePayment(StatusType.COMPLETED, paymentGetVm.orderId(), Message.PAYMENT_COMPLETED);
+            }
             if (paymentGetVm.transactionStatus().equalsIgnoreCase("01"))
                 return generatePayment(StatusType.PENDING, paymentGetVm.orderId(), Message.PAYMENT_PENDING);
             if (paymentGetVm.transactionStatus().equalsIgnoreCase("02"))

@@ -1,12 +1,12 @@
 package com.nashtech.cellphonesfake.service;
 
+import com.nashtech.cellphonesfake.view.PaginationVm;
 import com.nashtech.cellphonesfake.view.RatingVm;
-
-import java.util.List;
 
 public interface RatingService {
     void createRating(RatingVm ratingVm);
-    List<RatingVm> getRatingByProductId(Long productId);
+//    List<RatingVm> getRatingByProductId(Long productId, int page, int size);
     void deleteRating(Long id);
-    List<RatingVm> getPublishRating(Long productId);
+    PaginationVm getPublishRating(Long productId, int page, int size);
+    Double getAverageRating(Long productId);
 }

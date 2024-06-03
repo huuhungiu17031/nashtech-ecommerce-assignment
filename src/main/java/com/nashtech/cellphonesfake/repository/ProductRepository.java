@@ -13,4 +13,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query(value = "SELECT p FROM product p " +
             "WHERE p.category.id = :categoryId AND (:brandId IS NULL OR p.brand.id = :brandId)")
     Page<Product> findByCategoryIdAndIsPublishedIsTrue(Long categoryId, Long brandId, Pageable pageable);
+
+    @Query(value = "SELECT p FROM product p " +
+            "WHERE  (:brandId IS NULL OR p.brand.id = :brandId)")
+    Page<Product> findProduct(Long brandId, Pageable pageable);
+
 }

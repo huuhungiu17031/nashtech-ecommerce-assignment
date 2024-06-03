@@ -1,4 +1,8 @@
 package com.nashtech.cellphonesfake.view;
 
-public record JwtResponse(String jwtToken, String refreshToken) {
+import com.nashtech.cellphonesfake.enumeration.TokenType;
+
+import java.util.List;
+
+public record JwtResponse(String accessToken, String refreshToken, String email, Long userId, TokenType type) {
 }

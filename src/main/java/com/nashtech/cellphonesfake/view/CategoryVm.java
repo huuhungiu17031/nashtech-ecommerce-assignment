@@ -4,5 +4,6 @@ public record CategoryVm(
         Long id,
         String categoryName,
         String categoryDescription,
-        String icon
+        String icon,
+        Boolean isPublished
 ) {}

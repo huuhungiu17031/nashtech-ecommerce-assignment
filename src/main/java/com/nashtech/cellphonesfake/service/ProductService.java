@@ -7,15 +7,17 @@ import com.nashtech.cellphonesfake.view.ProductDetailVm;
 import com.nashtech.cellphonesfake.view.ProductPostVm;
 
 public interface ProductService {
-    ProductDetailVm getProductDetail(Long id);
-
     PaginationVm getProductCardVmByCategory(Long categoryId, Long brandId, String field, String dir, int page, int size);
+
+    ProductDetailVm getProductDetail(Long id);
 
     void createProduct(ProductPostVm productPostVm);
 
     Product findProductById(Long id);
 
     Product checkProductAmountAndReduceStockQuantity(Long productId, Long amount, PaymentMethod paymentMethod);
+
+    PaginationVm getProductCardAdminVmByCategory(Long brandId, String field, String dir, int page, int size);
 
     void saveProduct(Product product);
 }

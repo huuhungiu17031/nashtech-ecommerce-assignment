@@ -3,6 +3,7 @@ package com.nashtech.cellphonesfake.exception.handler;
 
 import com.nashtech.cellphonesfake.exception.BadRequestException;
 import com.nashtech.cellphonesfake.exception.NotFoundException;
+import com.nashtech.cellphonesfake.exception.UnAuthorizedException;
 import com.nashtech.cellphonesfake.view.ErrorVm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -54,6 +55,14 @@ public class GlobalHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorVm> handleBadRequestException(BadRequestException exception, WebRequest request) {
         String message = exception.getMessage();
         ErrorVm errorVm = new ErrorVm(HttpStatus.BAD_REQUEST.toString(), HttpStatus.BAD_REQUEST.getReasonPhrase(), message);
+        return ResponseEntity.badRequest().body(errorVm);
+    }
+
+
+    @ExceptionHandler(UnAuthorizedException.class)
+    public ResponseEntity<ErrorVm> handleBadRequestException(UnAuthorizedException exception, WebRequest request) {
+        String message = exception.getMessage();
+        ErrorVm errorVm = new ErrorVm(HttpStatus.FORBIDDEN.toString(), HttpStatus.FORBIDDEN.getReasonPhrase(), message);
         return ResponseEntity.badRequest().body(errorVm);
     }
 

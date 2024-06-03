@@ -30,7 +30,6 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             orderDetail.setProduct(product);
             return orderDetail;
         }).toList();
-       log.info("Order details created {}" ,list);
         return List.of();
     }
 

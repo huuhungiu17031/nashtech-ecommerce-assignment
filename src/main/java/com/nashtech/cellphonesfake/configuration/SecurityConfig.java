@@ -74,6 +74,8 @@ public class SecurityConfig {
                                 .requestMatchers(WHITE_LIST_URL).permitAll()
                                 .requestMatchers(HttpMethod.POST, "/order", "/cart").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/brand", "/product", "/category").hasRole(admin)
+                                .requestMatchers(HttpMethod.PUT, "/brand", "/product", "/category", "/user/update").hasRole(admin)
+                                .requestMatchers(HttpMethod.GET, "/user", "/category/backoffice", "/product/backoffice").hasRole(admin)
                                 .anyRequest().permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

@@ -27,7 +27,7 @@ public class User {
     private String email;
     @Column(nullable = false)
     private String password;
-
+    private Boolean isBlocked = false;
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role",

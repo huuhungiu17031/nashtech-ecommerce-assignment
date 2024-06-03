@@ -46,4 +46,16 @@ public class ProductController {
         productService.createProduct(productPostVm);
         return new ResponseEntity<>(Message.PRODUCT_CREATED, HttpStatus.CREATED);
     }
+
+
+    @GetMapping("/backoffice")
+    public ResponseEntity<PaginationVm> getListProductBackOffice(
+            @RequestParam(required = false, defaultValue = "price") String field,
+            @RequestParam(required = false, defaultValue = "desc") String dir,
+            @RequestParam(required = false) Long brandId,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        return new ResponseEntity<>(productService.getProductCardAdminVmByCategory(brandId, field, dir, page, size), HttpStatus.OK);
+    }
 }

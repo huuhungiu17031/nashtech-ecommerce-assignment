@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +25,7 @@ public class VnPayController {
         this.paymentService = paymentService;
     }
 
-    @GetMapping
+    @PostMapping
     public ResponseEntity<PaymentResponse> createPayment(HttpServletRequest request, @RequestParam Long orderId) {
         PaymentResponse paymentResponse = paymentService.createPayment(request, orderId);
         return new ResponseEntity<>(paymentResponse, HttpStatus.OK);
@@ -46,7 +47,8 @@ public class VnPayController {
             @RequestParam("vnp_SecureHash") String secureHash,
             @RequestParam(name = "vnp_BankTranNo", defaultValue = "") String bankTranNo
     ) {
-        PaymentGetVm paymentGetVm = new PaymentGetVm(id, amount, bankCode, cardType, orderInfo, payDate, responseCode, tmnCode, transactionNo, transactionStatus, txnRef, secureHash, bankTranNo);
+        PaymentGetVm paymentGetVm = new PaymentGetVm(id,
+                amount, bankCode, cardType, orderInfo, payDate, responseCode, tmnCode, transactionNo, transactionStatus, txnRef, secureHash, bankTranNo);
         return new ResponseEntity<>(paymentService.getPayment(paymentGetVm), HttpStatus.OK);
     }
 }
