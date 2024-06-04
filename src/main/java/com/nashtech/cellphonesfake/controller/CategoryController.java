@@ -1,7 +1,9 @@
 package com.nashtech.cellphonesfake.controller;
 
 import com.nashtech.cellphonesfake.service.CategoryService;
+import com.nashtech.cellphonesfake.view.CategoryAdminVm;
 import com.nashtech.cellphonesfake.view.CategoryVm;
+import com.nashtech.cellphonesfake.view.PaginationVm;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -34,8 +37,21 @@ public class CategoryController {
         return new ResponseEntity<>(categoryService.createCategoryVms(categoryVmList), HttpStatus.CREATED);
     }
 
-    @PutMapping("{id}")
-    public ResponseEntity<CategoryVm> updateCategory(@PathVariable Long id, @Valid @RequestBody CategoryVm categoryVm) {
+    @GetMapping("{id}")
+    public ResponseEntity<CategoryAdminVm> getCategoryById(@PathVariable Long id) {
+        return new ResponseEntity<>(categoryService.findCategoryAdminVmById(id), HttpStatus.OK);
+    }
+
+    @GetMapping("/backoffice")
+    public ResponseEntity<PaginationVm> getAllCategoriesBackOffice(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        return new ResponseEntity<>(categoryService.findAllCategoriesBackOffice(page, size), HttpStatus.OK);
+    }
+
+    @PutMapping
+    public ResponseEntity<CategoryVm> updateCategory(@Valid @RequestBody CategoryVm categoryVm) {
         return new ResponseEntity<>(categoryService.updateCategory(categoryVm), HttpStatus.OK);
     }
 

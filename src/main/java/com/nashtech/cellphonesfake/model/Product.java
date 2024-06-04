@@ -1,10 +1,7 @@
 package com.nashtech.cellphonesfake.model;
 
-import com.nashtech.cellphonesfake.enumeration.ProductType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,13 +21,12 @@ public class Product extends BaseEntity {
     @Column(unique = true)
     private String productName;
     private Long price;
-    @Enumerated(EnumType.STRING)
-    private ProductType type;
     private Long stockQuantity;
     @Column(length = 5000)
     private String description;
     @Column
     private Boolean available = true;
+    private Boolean isFeatured = false;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
     private Brand brand;

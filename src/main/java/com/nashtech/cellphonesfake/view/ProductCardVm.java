@@ -6,6 +6,7 @@ public record ProductCardVm(
         Long id,
         @NotBlank String productName,
         @NotBlank Long price,
-        String thumbnail
+        String thumbnail,
+        Boolean isFeatured
 ) {
 }

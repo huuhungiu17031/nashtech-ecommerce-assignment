@@ -3,6 +3,7 @@ package com.nashtech.cellphonesfake.exception.handler;
 
 import com.nashtech.cellphonesfake.exception.BadRequestException;
 import com.nashtech.cellphonesfake.exception.NotFoundException;
+import com.nashtech.cellphonesfake.exception.UnAuthorizedException;
 import com.nashtech.cellphonesfake.view.ErrorVm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -58,16 +59,12 @@ public class GlobalHandler extends ResponseEntityExceptionHandler {
     }
 
 
-//    @Override
-//    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-//        var errors = ex.getBindingResult().getAllErrors()
-//                .stream()
-//                .map(e -> (FieldError) e)
-//                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-//        var error = ErrorResponse.builder().code(HttpStatus.BAD_REQUEST.value())
-//                .message("Validation Error").errors(errors).build();
-//        return ResponseEntity.badRequest().body(error);
-//    }
+    @ExceptionHandler(UnAuthorizedException.class)
+    public ResponseEntity<ErrorVm> handleBadRequestException(UnAuthorizedException exception, WebRequest request) {
+        String message = exception.getMessage();
+        ErrorVm errorVm = new ErrorVm(HttpStatus.FORBIDDEN.toString(), HttpStatus.FORBIDDEN.getReasonPhrase(), message);
+        return ResponseEntity.badRequest().body(errorVm);
+    }
 
     private String getServletPath(WebRequest webRequest) {
         ServletWebRequest servletRequest = (ServletWebRequest) webRequest;

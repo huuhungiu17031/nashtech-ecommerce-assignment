@@ -2,6 +2,7 @@ package com.nashtech.cellphonesfake.controller;
 
 import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.service.RatingService;
+import com.nashtech.cellphonesfake.view.PaginationVm;
 import com.nashtech.cellphonesfake.view.RatingVm;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/rating")
@@ -31,19 +30,23 @@ public class RatingController {
         return new ResponseEntity<>(Message.RATING_CREATED, HttpStatus.OK);
     }
 
-    @GetMapping
-    public ResponseEntity<List<RatingVm>> getRatingsByProductId(@RequestParam Long productId) {
-        return new ResponseEntity<>(ratingService.getRatingByProductId(productId), HttpStatus.OK);
-    }
-
     @GetMapping("/store-front/{productId}")
-    public ResponseEntity<List<RatingVm>> getPublishedRatingsByProductId(@PathVariable Long productId) {
-        return new ResponseEntity<>(ratingService.getPublishRating(productId), HttpStatus.OK);
+    public ResponseEntity<PaginationVm> getPublishedRatingsByProductId(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return new ResponseEntity<>(ratingService.getPublishRating(productId, page, size), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteRating(@PathVariable Long id) {
         ratingService.deleteRating(id);
         return new ResponseEntity<>(Message.RATING_DELETED, HttpStatus.OK);
+    }
+
+    @GetMapping("/average/{productId}")
+    public ResponseEntity<Double> getAverageRating(@PathVariable Long productId) {
+        return new ResponseEntity<>(ratingService.getAverageRating(productId), HttpStatus.OK);
     }
 }

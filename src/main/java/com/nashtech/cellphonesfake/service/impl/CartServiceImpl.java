@@ -10,6 +10,7 @@ import com.nashtech.cellphonesfake.repository.CartRepository;
 import com.nashtech.cellphonesfake.service.CartDetailService;
 import com.nashtech.cellphonesfake.service.CartService;
 import com.nashtech.cellphonesfake.view.CartDetailRequest;
+import com.nashtech.cellphonesfake.view.CartVm;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,6 +45,12 @@ public class CartServiceImpl implements CartService {
         }
         cartDetailService.saveCartDetail(cartDetail);
         return Message.CART_ADD_SUCCESS;
+    }
+
+    @Override
+    public CartVm getCartByUserEmail(String userEmail) {
+        Cart cart = findCartByUserEmail(userEmail);
+        return new CartVm(cart.getId());
     }
 
     private Cart findCartByUserEmail(String email) {

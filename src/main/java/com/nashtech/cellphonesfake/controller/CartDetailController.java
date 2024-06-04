@@ -35,7 +35,7 @@ public class CartDetailController {
         return new ResponseEntity<>(cartDetailService.updateCartDetail(cartDetailVm.id(), cartDetailVm.amount()), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{cartId}")
+    @DeleteMapping("/{cartId}/all")
     public ResponseEntity<String> deleteAllCartDetails(@PathVariable Long cartId) {
         return new ResponseEntity<>(cartDetailService.deleteAllCartDetails(cartId), HttpStatus.OK);
     }

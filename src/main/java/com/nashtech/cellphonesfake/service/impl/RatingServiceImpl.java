@@ -4,7 +4,11 @@ import com.nashtech.cellphonesfake.model.Rating;
 import com.nashtech.cellphonesfake.repository.RatingRepository;
 import com.nashtech.cellphonesfake.service.ProductService;
 import com.nashtech.cellphonesfake.service.RatingService;
+import com.nashtech.cellphonesfake.view.PaginationVm;
 import com.nashtech.cellphonesfake.view.RatingVm;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,20 +33,29 @@ public class RatingServiceImpl implements RatingService {
     }
 
     @Override
-    public List<RatingVm> getRatingByProductId(Long productId) {
-        productService.findProductById(productId);
-        return mapRatings(ratingRepository.findByProduct_Id(productId));
-    }
-
-    @Override
     public void deleteRating(Long id) {
         ratingRepository.deleteById(id);
     }
 
     @Override
-    public List<RatingVm> getPublishRating(Long productId) {
+    public PaginationVm getPublishRating(Long productId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Rating> ratings = ratingRepository.findByProduct_Id(productId, pageable);
+        return new PaginationVm(
+                ratings.getTotalPages(),
+                ratings.getTotalElements(),
+                ratings.getSize(),
+                ratings.getNumber(),
+                mapRatings(ratings.stream().toList())
+        );
+    }
+
+    @Override
+    public Double getAverageRating(Long productId) {
         productService.findProductById(productId);
-        return mapRatings(ratingRepository.findByProduct_IdAndIsPublishIsTrue(productId));
+        Double ratingAverage = ratingRepository.getAverageRating(productId);
+        if (ratingAverage == null) return 5.0;
+        return ratingAverage;
     }
 
     private List<RatingVm> mapRatings(List<Rating> ratings) {
@@ -50,7 +63,8 @@ public class RatingServiceImpl implements RatingService {
                 new RatingVm(
                         rating.getComment(),
                         rating.getScore(),
-                        rating.getProduct().getId()
+                        rating.getProduct().getId(),
+                        rating.getCreatedBy()
                 )
         ).toList();
     }
