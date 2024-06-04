@@ -10,7 +10,6 @@ public record ProductPostVm(
         Long id,
         @NotNull String productName,
         @NotNull Long price,
-        @Enumerated(EnumType.STRING)
         @NotNull Long stockQuantity,
         @NotNull String description,
         List<String> productImageUrls,

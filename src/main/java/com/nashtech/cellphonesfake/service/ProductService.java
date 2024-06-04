@@ -3,6 +3,7 @@ package com.nashtech.cellphonesfake.service;
 import com.nashtech.cellphonesfake.enumeration.PaymentMethod;
 import com.nashtech.cellphonesfake.model.Product;
 import com.nashtech.cellphonesfake.view.PaginationVm;
+import com.nashtech.cellphonesfake.view.ProductDetailAdminVm;
 import com.nashtech.cellphonesfake.view.ProductDetailVm;
 import com.nashtech.cellphonesfake.view.ProductPostVm;
 
@@ -20,4 +21,8 @@ public interface ProductService {
     PaginationVm getProductCardAdminVmByCategory(Long brandId, String field, String dir, int page, int size);
 
     void saveProduct(Product product);
+
+    ProductDetailAdminVm getProductDetailAdmin(Long id);
+
+    void updateProduct(ProductPostVm product);
 }

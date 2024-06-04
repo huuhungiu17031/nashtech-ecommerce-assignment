@@ -1,6 +1,5 @@
 package com.nashtech.cellphonesfake.filter;
 
-import com.nashtech.cellphonesfake.exception.BadRequestException;
 import com.nashtech.cellphonesfake.exception.UnAuthorizedException;
 import com.nashtech.cellphonesfake.model.User;
 import com.nashtech.cellphonesfake.repository.TokenRepository;

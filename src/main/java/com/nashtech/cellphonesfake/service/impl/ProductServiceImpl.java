@@ -29,13 +29,19 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
+@Transactional
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductGalleryRepository productGalleryRepository;
     private final CategoryService categoryService;
     private final BrandService brandService;
 
-    public ProductServiceImpl(ProductRepository productRepository, ProductGalleryRepository productGalleryRepository, CategoryService categoryService, BrandService brandService) {
+    public ProductServiceImpl(
+            ProductRepository productRepository,
+            ProductGalleryRepository productGalleryRepository,
+            CategoryService categoryService,
+            BrandService brandService
+    ) {
         this.productRepository = productRepository;
         this.productGalleryRepository = productGalleryRepository;
         this.categoryService = categoryService;
@@ -84,7 +90,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    @Transactional
     public void createProduct(ProductPostVm productPostVm) {
         Product newProduct = ProductMapper.INSTANCE.toProduct(productPostVm);
 
@@ -107,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
                 productGallery.setProduct(newProduct);
                 if (isFirstGallery.get()) {
                     productGallery.setThumbnail(true);
-                    isFirstGallery.set(false); // Update flag
+                    isFirstGallery.set(false);
                 }
                 productGalleryRepository.save(productGallery);
             });
@@ -149,18 +154,66 @@ public class ProductServiceImpl implements ProductService {
                 listProduct.getSize(),
                 listProduct.getNumber(),
                 listProduct.stream().map(product -> {
-                    ProductGallery productGallery = productGalleryRepository.findByProductIdAndThumbnailTrue(product.getId()).orElse(null);
-                    assert productGallery != null;
-                    return new ProductAdminVm(
+                    Optional<ProductGallery> productGallery = productGalleryRepository.findByProductIdAndThumbnailTrue(product.getId());
+                    return productGallery.map(gallery -> new ProductAdminVm(
                             product.getId(),
                             product.getProductName(),
                             product.getPrice(),
                             product.getStockQuantity(),
                             product.getIsFeatured(),
-                            productGallery.getImagePath()
-                    );
+                            gallery.getImagePath()
+                    )).orElseGet(() -> new ProductAdminVm(
+                            product.getId(),
+                            product.getProductName(),
+                            product.getPrice(),
+                            product.getStockQuantity(),
+                            product.getIsFeatured(),
+                            null
+                    ));
                 }).toList()
         );
+    }
+
+    @Override
+    public ProductDetailAdminVm getProductDetailAdmin(Long id) {
+        Product product = findProductById(id);
+        return new ProductDetailAdminVm(
+                product.getId(),
+                product.getProductName(),
+                product.getPrice(),
+                product.getStockQuantity(),
+                product.getDescription(),
+                product.getIsFeatured(),
+                product.getBrand().getId(),
+                product.getCategory().getId()
+        );
+    }
+
+    @Override
+    public void updateProduct(ProductPostVm productPostVm) {
+        Product product = findProductById(productPostVm.id());
+        product.setProductName(productPostVm.productName());
+        product.setPrice(productPostVm.price());
+        product.setStockQuantity(productPostVm.stockQuantity());
+        product.setDescription(productPostVm.description());
+        product.setIsFeatured(productPostVm.isFeatured());
+        productGalleryRepository.deleteAllByProduct_Id(product.getId());
+        AtomicBoolean isFirstGallery = new AtomicBoolean(true);
+        productPostVm.productImageUrls().forEach(path -> {
+            ProductGallery productGallery = new ProductGallery();
+            productGallery.setProduct(product);
+            productGallery.setImagePath(path);
+            if (isFirstGallery.get()) {
+                productGallery.setThumbnail(true);
+                isFirstGallery.set(false);
+            }
+            productGalleryRepository.save(productGallery);
+        });
+        Category category = categoryService.findCategoryById(productPostVm.categoryId());
+        Brand brand = brandService.findBrandById(productPostVm.brandId());
+        product.setCategory(category);
+        product.setBrand(brand);
+        productRepository.save(product);
     }
 
     @Override

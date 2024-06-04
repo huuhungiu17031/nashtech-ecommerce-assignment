@@ -13,4 +13,6 @@ public interface ProductGalleryRepository extends JpaRepository<ProductGallery, 
     List<ProductGallery> findByProduct_Id(Long productId);
     Optional<ProductGallery> findByProductIdAndThumbnailTrue(Long productId);
     Optional<ProductGallery> findByProduct_IdAndThumbnailIsTrue(Long productId);
+    void deleteByImagePath(String imagePath);
+    void deleteAllByProduct_Id(Long productId);
 }

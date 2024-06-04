@@ -4,10 +4,16 @@ import com.nashtech.cellphonesfake.constant.Error;
 import com.nashtech.cellphonesfake.exception.NotFoundException;
 import com.nashtech.cellphonesfake.mapper.CategoryMapper;
 import com.nashtech.cellphonesfake.model.Category;
+import com.nashtech.cellphonesfake.model.ProductGallery;
 import com.nashtech.cellphonesfake.repository.CategoryRepository;
 import com.nashtech.cellphonesfake.service.CategoryService;
 import com.nashtech.cellphonesfake.view.CategoryAdminVm;
 import com.nashtech.cellphonesfake.view.CategoryVm;
+import com.nashtech.cellphonesfake.view.PaginationVm;
+import com.nashtech.cellphonesfake.view.ProductAdminVm;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,8 +33,16 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryAdminVm> findAllCategoriesBackOffice() {
-        return categoryRepository.findAll().stream().map(CategoryMapper.INSTANCE::toCategoryAdminVm).toList();
+    public PaginationVm findAllCategoriesBackOffice(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Category> pageCategory = categoryRepository.findAll(pageable);
+        return new PaginationVm(
+                pageCategory.getTotalPages(),
+                pageCategory.getTotalElements(),
+                pageCategory.getSize(),
+                pageCategory.getNumber(),
+                pageCategory.stream().map(CategoryMapper.INSTANCE::toCategoryAdminVm).toList()
+        );
     }
 
     @Override

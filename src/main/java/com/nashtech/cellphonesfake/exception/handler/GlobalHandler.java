@@ -66,18 +66,6 @@ public class GlobalHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.badRequest().body(errorVm);
     }
 
-
-//    @Override
-//    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-//        var errors = ex.getBindingResult().getAllErrors()
-//                .stream()
-//                .map(e -> (FieldError) e)
-//                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-//        var error = ErrorResponse.builder().code(HttpStatus.BAD_REQUEST.value())
-//                .message("Validation Error").errors(errors).build();
-//        return ResponseEntity.badRequest().body(error);
-//    }
-
     private String getServletPath(WebRequest webRequest) {
         ServletWebRequest servletRequest = (ServletWebRequest) webRequest;
         return servletRequest.getRequest().getServletPath();

@@ -17,7 +17,7 @@ import com.nashtech.cellphonesfake.view.PaymentGetVm;
 import com.nashtech.cellphonesfake.view.PaymentResponse;
 import com.nashtech.cellphonesfake.view.VnPayQueryAndSecureHash;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 @Service
-@Slf4j
+@Transactional
 public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final OrderDetailService orderDetailService;
@@ -87,7 +87,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse getPayment(PaymentGetVm paymentGetVm) {
-        Map<String, String> vnpParams = getStringStringMap(paymentGetVm);
+        Map<String, String> vnpParams = mappingPaymentInformation(paymentGetVm);
         VnPayQueryAndSecureHash vnPayQueryAndSecureHash = VnPayConfig.hashAllFields(vnpParams);
         String secureHash = vnPayQueryAndSecureHash.secureHash();
         if (paymentGetVm.secureHash().equalsIgnoreCase(secureHash)) {
@@ -103,7 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
         throw new BadRequestException(Error.Message.PAYMENT_FAILED);
     }
 
-    private static Map<String, String> getStringStringMap(PaymentGetVm paymentGetVm) {
+    private static Map<String, String> mappingPaymentInformation(PaymentGetVm paymentGetVm) {
         Map<String, String> vnpParams = new HashMap<>();
         vnpParams.put("vnp_Amount", String.valueOf(paymentGetVm.amount()));
         vnpParams.put("vnp_BankCode", paymentGetVm.bankCode());
