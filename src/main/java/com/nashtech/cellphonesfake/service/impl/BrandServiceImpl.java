@@ -30,10 +30,8 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public List<BrandVm> findAllBrands() {
-        return brandRepository
-                .findAll()
-                .stream()
-                .map(BrandMapper.INSTANCE::toBrandVm).toList();
+        List<Brand> list = brandRepository.findAll();
+        return list.stream().map(BrandMapper.INSTANCE::toBrandVm).toList();
     }
 
     @Override
