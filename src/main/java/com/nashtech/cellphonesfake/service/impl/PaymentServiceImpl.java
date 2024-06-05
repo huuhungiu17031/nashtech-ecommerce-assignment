@@ -6,9 +6,13 @@ import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.enumeration.PaymentMethod;
 import com.nashtech.cellphonesfake.enumeration.StatusType;
 import com.nashtech.cellphonesfake.exception.BadRequestException;
+import com.nashtech.cellphonesfake.exception.NotFoundException;
+import com.nashtech.cellphonesfake.model.Cart;
+import com.nashtech.cellphonesfake.model.CartDetail;
 import com.nashtech.cellphonesfake.model.Order;
 import com.nashtech.cellphonesfake.model.Product;
-import com.nashtech.cellphonesfake.service.CartDetailService;
+import com.nashtech.cellphonesfake.repository.CartDetailRepository;
+import com.nashtech.cellphonesfake.repository.CartRepository;
 import com.nashtech.cellphonesfake.service.OrderDetailService;
 import com.nashtech.cellphonesfake.service.OrderService;
 import com.nashtech.cellphonesfake.service.PaymentService;
@@ -32,16 +36,20 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderService orderService;
     private final OrderDetailService orderDetailService;
     private final ProductService productService;
-    private final CartDetailService cartDetailService;
+    private final CartRepository cartRepository;
+    private final CartDetailRepository cartDetailRepository;
     public PaymentServiceImpl(
             OrderService orderService,
             OrderDetailService orderDetailService,
             ProductService productService,
-            CartDetailService cartDetailService) {
+            CartDetailRepository cartDetailRepository,
+            CartRepository cartRepository
+    ) {
         this.orderDetailService = orderDetailService;
         this.orderService = orderService;
         this.productService = productService;
-        this.cartDetailService = cartDetailService;
+        this.cartRepository = cartRepository;
+        this.cartDetailRepository = cartDetailRepository;
     }
 
     @Override
@@ -91,10 +99,8 @@ public class PaymentServiceImpl implements PaymentService {
         VnPayQueryAndSecureHash vnPayQueryAndSecureHash = VnPayConfig.hashAllFields(vnpParams);
         String secureHash = vnPayQueryAndSecureHash.secureHash();
         if (paymentGetVm.secureHash().equalsIgnoreCase(secureHash)) {
-            if (paymentGetVm.transactionStatus().equalsIgnoreCase("00")){
-                 
+            if (paymentGetVm.transactionStatus().equalsIgnoreCase("00"))
                 return generatePayment(StatusType.COMPLETED, paymentGetVm.orderId(), Message.PAYMENT_COMPLETED);
-            }
             if (paymentGetVm.transactionStatus().equalsIgnoreCase("01"))
                 return generatePayment(StatusType.PENDING, paymentGetVm.orderId(), Message.PAYMENT_PENDING);
             if (paymentGetVm.transactionStatus().equalsIgnoreCase("02"))
@@ -129,10 +135,14 @@ public class PaymentServiceImpl implements PaymentService {
             return new PaymentResponse(status.toString(), message, null);
         if (order.getStatus().equals(StatusType.PENDING) && status.equals(StatusType.COMPLETED)) {
             order.setStatus(StatusType.COMPLETED);
+            Cart cart = cartRepository.findCartByUser_Email(order.getCreatedBy()).orElseThrow(() -> new NotFoundException("Not found Cart"));
+
             orderDetailService.findByOrderId(orderId).forEach(orderDetail -> {
                 Product product = orderDetail.getProduct();
                 product.setStockQuantity(product.getStockQuantity() - orderDetail.getQuantity());
                 productService.saveProduct(product);
+                CartDetail cartDetail = cartDetailRepository.findByCart_IdAndProduct_Id(cart.getId(), product.getId()).orElseThrow(() -> new NotFoundException("Not found CartDetail"));
+                cartDetailRepository.deleteById(cartDetail.getId());
             });
             orderService.save(order);
             return new PaymentResponse(status.toString(), message, null);

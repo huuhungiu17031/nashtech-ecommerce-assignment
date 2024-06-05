@@ -81,6 +81,7 @@ public class UserServiceImpl implements UserService, LogoutHandler {
                 loginVm.email(),
                 loginVm.password()
         );
+        System.out.println("username: ");
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         List<String> listRoles = authentication.getAuthorities()
                 .stream().map(GrantedAuthority::getAuthority)
@@ -228,7 +229,7 @@ public class UserServiceImpl implements UserService, LogoutHandler {
     @Override
     public void updateUser(UserVm userVm) {
         User user = findByEmail(userVm.email());
-        user.setIsBlocked(userVm.isBlock());
+        user.setIsBlocked(userVm.action());
         revokeAllUserTokens(user);
         userRepository.save(user);
     }

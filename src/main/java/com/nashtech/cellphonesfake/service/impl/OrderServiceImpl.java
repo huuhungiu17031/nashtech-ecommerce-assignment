@@ -12,10 +12,13 @@ import com.nashtech.cellphonesfake.repository.OrderRepository;
 import com.nashtech.cellphonesfake.service.OrderDetailService;
 import com.nashtech.cellphonesfake.service.OrderService;
 import com.nashtech.cellphonesfake.service.ProductService;
+import com.nashtech.cellphonesfake.view.OrderAndOrderDetail;
 import com.nashtech.cellphonesfake.view.OrderDetailVm;
 import com.nashtech.cellphonesfake.view.OrderVm;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +46,13 @@ public class OrderServiceImpl implements OrderService {
         }
         if (orderVm.orderDetailVms().isEmpty()) throw new BadRequestException(Error.Message.NO_PRODUCTS_FOUND);
         if (totalSize > 10) throw new BadRequestException(Error.Message.TOO_MANY_PRODUCTS);
-        Order order = new Order();
+
+        Order order = null;
+        if (orderVm.id() == 0) {
+            order = new Order();
+        } else {
+            order = findOrderById(orderVm.id());
+        }
         AtomicLong totalMoney = new AtomicLong(0L);
         List<OrderDetail> orderDetailsWithoutCart = orderVm.orderDetailVms().stream().map(orderDetailVm -> {
             Product product = productService.findProductById(orderDetailVm.productId());
@@ -92,4 +101,15 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(status);
         orderRepository.save(order);
     }
+
+    @Override
+    public List<OrderAndOrderDetail> findOrderByEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return orderRepository.findAllByCreatedBy((String) authentication.getPrincipal()).stream().map(order -> {
+            List<OrderDetailVm> orderDetailVms = order.getOrderDetailList().stream()
+                    .map(orderDetail -> new OrderDetailVm(orderDetail.getProduct().getId(), orderDetail.getQuantity())).toList();
+            return new OrderAndOrderDetail(order, orderDetailVms);
+        }).toList();
+    }
 }
+    
