@@ -136,7 +136,6 @@ public class PaymentServiceImpl implements PaymentService {
         if (order.getStatus().equals(StatusType.PENDING) && status.equals(StatusType.COMPLETED)) {
             order.setStatus(StatusType.COMPLETED);
             Cart cart = cartRepository.findCartByUser_Email(order.getCreatedBy()).orElseThrow(() -> new NotFoundException("Not found Cart"));
-
             orderDetailService.findByOrderId(orderId).forEach(orderDetail -> {
                 Product product = orderDetail.getProduct();
                 product.setStockQuantity(product.getStockQuantity() - orderDetail.getQuantity());

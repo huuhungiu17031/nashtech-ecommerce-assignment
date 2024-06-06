@@ -3,6 +3,7 @@ package com.nashtech.cellphonesfake.controller;
 import com.nashtech.cellphonesfake.constant.Message;
 import com.nashtech.cellphonesfake.service.ProductService;
 import com.nashtech.cellphonesfake.view.PaginationVm;
+import com.nashtech.cellphonesfake.view.ProductCardVm;
 import com.nashtech.cellphonesfake.view.ProductDetailAdminVm;
 import com.nashtech.cellphonesfake.view.ProductDetailVm;
 import com.nashtech.cellphonesfake.view.ProductPostVm;
@@ -18,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 
 @RestController
@@ -70,5 +75,10 @@ public class ProductController {
     public ResponseEntity<String> updateProduct(@Valid @RequestBody ProductPostVm productPostVm) {
         productService.updateProduct(productPostVm);
         return new ResponseEntity<>("Edit product successfully", HttpStatus.OK);
+    }
+
+    @PostMapping("/findProductByImage")
+    public ResponseEntity<List<ProductCardVm>> getProductByImage(@RequestParam("image") MultipartFile image) throws IOException {
+            return new ResponseEntity<>(productService.findProductByImage(image), HttpStatus.OK);
     }
 }

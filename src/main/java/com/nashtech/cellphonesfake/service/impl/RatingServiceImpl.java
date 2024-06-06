@@ -32,10 +32,10 @@ public class RatingServiceImpl implements RatingService {
         ratingRepository.save(newRating);
     }
 
-    @Override
-    public void deleteRating(Long id) {
-        ratingRepository.deleteById(id);
-    }
+        @Override
+        public void deleteRating(Long id) {
+            ratingRepository.deleteById(id);
+        }
 
     @Override
     public PaginationVm getPublishRating(Long productId, int page, int size) {
@@ -67,5 +67,9 @@ public class RatingServiceImpl implements RatingService {
                         rating.getCreatedBy()
                 )
         ).toList();
+    }
+
+    public List<RatingVm> getMappedRatings(List<Rating> ratings) {
+        return mapRatings(ratings);
     }
 }
