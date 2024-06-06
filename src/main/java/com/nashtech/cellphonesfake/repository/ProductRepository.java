@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
     @Query(value = "SELECT p FROM product p " +
@@ -17,5 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query(value = "SELECT p FROM product p " +
             "WHERE  (:brandId IS NULL OR p.brand.id = :brandId)")
     Page<Product> findProduct(Long brandId, Pageable pageable);
+
+    List<Product> findByProductNameContainsIgnoreCaseOrDescriptionContainingIgnoreCase(String productName, String keywords);
 
 }

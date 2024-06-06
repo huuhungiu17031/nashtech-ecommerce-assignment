@@ -16,25 +16,45 @@ import com.nashtech.cellphonesfake.service.CategoryService;
 import com.nashtech.cellphonesfake.service.ProductService;
 import com.nashtech.cellphonesfake.specification.ProductSpecification;
 import com.nashtech.cellphonesfake.view.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Transactional
+@Slf4j
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductGalleryRepository productGalleryRepository;
     private final CategoryService categoryService;
     private final BrandService brandService;
+    @Value("${python.service.url}")
+    private String pythonServiceUrl;
 
     public ProductServiceImpl(
             ProductRepository productRepository,
@@ -62,24 +82,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest.of(page, size, sort);
         Specification<Product> spec = ProductSpecification.withDynamicQueryParameters(categoryId, brandId, false);
         Page<Product> listProduct = productRepository.findAll(spec, pageable);
-        List<ProductCardVm> productCardVmList = listProduct
-                .stream().map(
-                        productVm -> {
-                            Optional<ProductGallery> optional = productGalleryRepository.findByProductIdAndThumbnailTrue(productVm.getId());
-                            String thumbnail = null;
-                            if (optional.isPresent()) {
-                                thumbnail = optional.get().getImagePath();
-                            }
-                            return new ProductCardVm(
-                                    productVm.getId(),
-                                    productVm.getProductName(),
-                                    productVm.getPrice(),
-                                    thumbnail,
-                                    productVm.getIsFeatured()
-                            );
-                        }
-                ).toList();
-
+        List<ProductCardVm> productCardVmList = convertProductToProductCardVm(listProduct.getContent());
         return new PaginationVm(
                 listProduct.getTotalPages(),
                 listProduct.getTotalElements(),
@@ -217,6 +220,33 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public List<ProductCardVm> findProductByImage(MultipartFile image) throws IOException {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("image", new MultipartInputStreamFileResource(image.getInputStream(), image.getOriginalFilename()));
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            ResponseEntity<String> response = restTemplate.postForEntity(pythonServiceUrl, requestEntity, String.class);
+            List<String> keywordsList = extractKeywordsFromResponse(Objects.requireNonNull(response.getBody()));
+            Set<Product> recommendProducts = new HashSet<>();
+            for (String keyword : keywordsList) {
+                log.info("Keyword: {}", keyword);
+                List<Product> products = productRepository.findByProductNameContainsIgnoreCaseOrDescriptionContainingIgnoreCase(keyword.toLowerCase(), keyword.toLowerCase());
+                recommendProducts.addAll(products);
+                if (products.size() == 1) {
+                    break;
+                }
+            }
+            return convertProductToProductCardVm(recommendProducts.stream().toList());
+        } catch (IOException io) {
+            throw new IOException(io.getMessage());
+        }
+
+    }
+
+    @Override
     public void saveProduct(Product product) {
         productRepository.save(product);
     }
@@ -226,4 +256,50 @@ public class ProductServiceImpl implements ProductService {
         if (dir.equalsIgnoreCase("asc") && field.equalsIgnoreCase(price)) return Sort.by(Sort.Direction.ASC, price);
         return Sort.by(Sort.Direction.DESC, price);
     }
+
+    private static class MultipartInputStreamFileResource extends InputStreamResource {
+        private final String filename;
+
+        MultipartInputStreamFileResource(InputStream inputStream, String filename) {
+            super(inputStream);
+            this.filename = filename;
+        }
+
+        @Override
+        public String getFilename() {
+            return this.filename;
+        }
+
+        @Override
+        public long contentLength() throws IOException {
+            return -1; // We do not want to generally read the whole stream into memory ...
+        }
+    }
+
+    private static List<String> extractKeywordsFromResponse(String responseBody) {
+        String keywordsString = responseBody.substring(responseBody.indexOf("'") + 1, responseBody.lastIndexOf("'"));
+        String[] keywordsArray = keywordsString.split(", ");
+        return Arrays.asList(keywordsArray);
+    }
+
+    private List<ProductCardVm> convertProductToProductCardVm(List<Product> products) {
+        return products.stream().map(
+                productVm -> {
+                    Optional<ProductGallery> optional = productGalleryRepository.findByProductIdAndThumbnailTrue(productVm.getId());
+                    String thumbnail = null;
+                    if (optional.isPresent()) {
+                        thumbnail = optional.get().getImagePath();
+                    }
+                    return new ProductCardVm(
+                            productVm.getId(),
+                            productVm.getProductName(),
+                            productVm.getPrice(),
+                            thumbnail,
+                            productVm.getIsFeatured()
+                    );
+                }
+        ).toList();
+    }
+
+
 }
